@@ -9,6 +9,7 @@
 #include <QDebug>
 
 #include "calibrationcurvegenerator.h"
+#include "angleinterpolation.h"
 
 int main(int argc, char *argv[])
 {
@@ -105,9 +106,21 @@ int main(int argc, char *argv[])
                                &phi3,
                                &phi4);
 
-    float angleFittingArray[dataLength];
-    getFittedCurve( measuredAngleArray, angleFittingArray, dataLength,
-                    &h1, &h2, &h3, &h4, &phi1, &phi2, &phi3, &phi4);
+    float fittedAngleErrorInDegree[dataLength];
+    float angleErrorConstants[dataLength];
+    float angleErrorSlopes[dataLength];
+//    float correctedAngleArrayInDegree[dataLength];
+
+    generateAngleErrorLookupTableUsingFittedCurve( measuredAngleArray, fittedAngleErrorInDegree,
+                                    dataLength, &h1, &h2, &h3, &h4,
+                                    &phi1, &phi2, &phi3, &phi4);
+
+    generateAngleErrorLookupTableUsingConstantsAndSlopes( measuredAngleArray, angleErrorConstants, angleErrorSlopes,
+                                    dataLength, &h1, &h2, &h3, &h4,
+                                    &phi1, &phi2, &phi3, &phi4);
+
+
+
 
     QFile outpuFile;
     QFileInfo outputFileInfo;
@@ -123,7 +136,7 @@ int main(int argc, char *argv[])
                  "," << "Number of points" <<endl;
         for (int i = 0; i<refAngle.size();++i)
         {
-            output << referenceAngleArray[i] << "," << measuredAngleArray[i] << "," << angleErrorArray[i] << "," << angleFittingArray[i] << "," <<
+            output << referenceAngleArray[i] << "," << measuredAngleArray[i] << "," << angleErrorArray[i] << "," << fittedAngleErrorInDegree[i] << "," <<
                       h1 << "," << h2 << "," << h3 << "," << h4 << "," <<
                       phi2 << "," << phi2 << "," << phi2 << "," << phi2 << "," <<
                       dataLength<< endl;

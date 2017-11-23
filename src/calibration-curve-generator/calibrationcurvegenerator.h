@@ -107,23 +107,22 @@ unsigned char extractAngleErrorHarmonics(   float referenceAngleInDegree[],
                                             float *pPhi3,
                                             float *pPhi4);
 
-
 /**
- * @brief Generate the fitted curve
+ * @brief Generate the angle error lookup table using the fitted curve
  *
- * of measured data based on the harmonics parameters
+ * Generate the calibration curve using the harmonics parameters
  * computed with the #extractAngleErrorHarmonics
  *
- * Generate the fitted curve of the input @p measuredAngleInDegree[] by using
- * the harmonics parameters @p pH1 - @p pH4 and @p pPhi1 - @p pPhi4 which have
- * been computed on #extractAngleErrorHarmonics.
- * The fitted curve (in degree) is provided through @p angleFittingArrayInDegree[]
- * array.
+ * Generate the fitted curve of the angle error of the input @p angleInDegree[]
+ * by using the harmonics parameters @p pH1 - @p pH4 and @p pPhi1 - @p pPhi4
+ * which have been computed on #extractAngleErrorHarmonics.
+ * The angle error fitted curve (in degree) is provided through
+ * @p fittedAngleErrorInDegree[] array.
  * See below a function call example:
  * @code{.c}
  * //input paramaters
  * const unsigned int sizeAngleArray = 200;
- * float measuredAngleInDegree[sizeAngleArray]; //fill with sensor angle
+ * float angleInDegree[sizeAngleArray]; //fill with sensor angle
  * //from extractAngleErrorHarmonics function
  * float h1;
  * float h2;
@@ -134,12 +133,13 @@ unsigned char extractAngleErrorHarmonics(   float referenceAngleInDegree[],
  * float phi3;
  * float phi4;
  * //output parameters
- * float angleFittingArray[sizeAngleArray];
- * getFittedCurve( measuredAngleInDegree, angleFittingArray, sizeAngleArray,
- *                 &h1, &h2, &h3, &h4, &phi1, &phi2, &phi3, &phi4);
+ * float fittedAngleErrorInDegree[sizeAngleArray];
+ * generateAngleErrorLookupTableUsingFittedCurve( angleInDegree,
+ *                              fittedAngleErrorInDegree, sizeAngleArray,
+ *                              &h1, &h2, &h3, &h4, &phi1, &phi2, &phi3, &phi4);
  * @endcode
- * @param measuredAngleInDegree[] Input array with the angle in degree measured by the sensor.
- * @param angleFittingArrayInDegree[] Output array with the fitted curve of the angle error in degree.
+ * @param angleInDegree[] Input array with the angle in degree.
+ * @param fittedAngleErrorInDegree[] Output array with the fitted curve of the angle error in degree.
  * @param sizeAngleArray size of the array provided to this function.
  * @param pH1 Pointer to H1 harmonic amplitude.
  * @param pH2 Pointer to H2 harmonic amplitude.
@@ -151,18 +151,83 @@ unsigned char extractAngleErrorHarmonics(   float referenceAngleInDegree[],
  * @param pPhi4 Pointer to Phi4 harmonic phase.
  * @return always return 0.
  */
-unsigned char getFittedCurve(   float measuredAngleInDegree[],
-                                float angleFittingArrayInDegree[],
-                                const unsigned int sizeAngleArray,
-                                float *pH1,
-                                float *pH2,
-                                float *pH3,
-                                float *pH4,
-                                float *pPhi1,
-                                float *pPhi2,
-                                float *pPhi3,
-                                float *pPhi4);
+unsigned char generateAngleErrorLookupTableUsingFittedCurve(float angleInDegree[],
+                                                            float fittedAngleErrorInDegree[],
+                                                            const unsigned int sizeAngleArray,
+                                                            float *pH1,
+                                                            float *pH2,
+                                                            float *pH3,
+                                                            float *pH4,
+                                                            float *pPhi1,
+                                                            float *pPhi2,
+                                                            float *pPhi3,
+                                                            float *pPhi4);
 
+/**
+ * @brief Generate the angle error lookup table using the constants and slopes
+ * parameters
+ *
+ * Generate the calibration curve using the harmonics parameters
+ * computed with the #extractAngleErrorHarmonics.
+ * Unlike #generateAngleErrorLookupTableUsingFittedCurve which return directly
+ * the angle error, this function return a combination of two parameters
+ * (a constant and a slope) that can be use to reconstruct the angle error.
+ *
+ * This approach is targeted to be easier (less computing power required)
+ * to interpolate in the end user application.
+ *
+ * Generate the fitted curve of the angle error of the input @p angleInDegree[]
+ * by using the harmonics parameters @p pH1 - @p pH4 and @p pPhi1 - @p pPhi4
+ * which have been computed on #extractAngleErrorHarmonics.
+ * The angle error lookup table is provided through
+ * @p angleErrorConstants[] and @p angleErrorSlopes[] arrays.
+ * See below a function call example:
+ * @code{.c}
+ * //input paramaters
+ * const unsigned int sizeAngleArray = 200;
+ * float angleInDegree[sizeAngleArray]; //fill with sensor angle
+ * //from extractAngleErrorHarmonics function
+ * float h1;
+ * float h2;
+ * float h3;
+ * float h4;
+ * float phi1;
+ * float phi2;
+ * float phi3;
+ * float phi4;
+ * //output parameters
+ * float angleErrorConstants[sizeAngleArray];
+ * float angleErrorSlopes[sizeAngleArray];
+ * generateAngleErrorLookupTableUsingConstantsAndSlopes( angleInDegree,
+ *      angleErrorConstants, angleErrorSlopes, sizeAngleArray,
+ *      &h1, &h2, &h3, &h4, &phi1, &phi2, &phi3, &phi4);
+ * @endcode
+ * @param angleInDegree[] Input array with the angle in degree.
+ * @param angleErrorConstants[] Output array with the constants of the angle error in degree.
+ * @param angleErrorSlopes[] Output array with the slopes of the angle error.
+ * @param sizeAngleArray size of the array provided to this function.
+ * @param pH1 Pointer to H1 harmonic amplitude.
+ * @param pH2 Pointer to H2 harmonic amplitude.
+ * @param pH3 Pointer to H3 harmonic amplitude.
+ * @param pH4 Pointer to H4 harmonic amplitude.
+ * @param pPhi1 Pointer to Phi1 harmonic phase.
+ * @param pPhi2 Pointer to Phi2 harmonic phase.
+ * @param pPhi3 Pointer to Phi3 harmonic phase.
+ * @param pPhi4 Pointer to Phi4 harmonic phase.
+ * @return always return 0.
+ */
+unsigned char generateAngleErrorLookupTableUsingConstantsAndSlopes( float angleInDegree[],
+                                                                    float angleErrorConstants[],
+                                                                    float angleErrorSlopes[],
+                                                                    const unsigned int sizeAngleArray,
+                                                                    float *pH1,
+                                                                    float *pH2,
+                                                                    float *pH3,
+                                                                    float *pH4,
+                                                                    float *pPhi1,
+                                                                    float *pPhi2,
+                                                                    float *pPhi3,
+                                                                    float *pPhi4);
 
 /**
  * @brief Compute the harmonics parameters.
@@ -176,12 +241,12 @@ unsigned char getHarmonics(float angleErrorArrayInDegree[],
                            float *pHarmonicPhase);
 
 
-/**
- * @brief Compute the modula the same way MatLab does.
- *
- * Private function only used inside #extractAngleErrorHarmonics
- */
-float modulo(float x, float y);
+///**
+// * @brief Compute the modula the same way MatLab does.
+// *
+// * Private function only used inside #extractAngleErrorHarmonics
+// */
+//float modulo(float x, float y);
 
 #if defined __cplusplus
 }

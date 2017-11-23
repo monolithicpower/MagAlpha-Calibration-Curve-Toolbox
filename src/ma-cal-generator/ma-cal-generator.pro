@@ -11,11 +11,14 @@ CONFIG -= app_bundle
 TEMPLATE = app
 
 INCLUDEPATH += \
-    ../calibration-curve-generator
+    ../calibration-curve-generator \
+    ../angle-interpolation
 
 SOURCES += main.cpp \
-    ../calibration-curve-generator/calibrationcurvegenerator.c
+    ../calibration-curve-generator/calibrationcurvegenerator.c \
+    ../angle-interpolation/angleinterpolation.c
 
 HEADERS += \
-    ../calibration-curve-generator/calibrationcurvegenerator.h
+    ../calibration-curve-generator/calibrationcurvegenerator.h \
+    ../angle-interpolation/angleinterpolation.h
 
