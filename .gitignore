@@ -1,5 +1,16 @@
-# C++ objects and libs
 
+
+# Output files
+/output-files
+
+# Doxygen
+/doc/generated-output
+
+# Executable
+*.exe
+
+
+# C++ objects and libs
 *.slo
 *.lo
 *.o
