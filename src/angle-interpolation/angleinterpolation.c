@@ -3,14 +3,14 @@
 
 static float modulo(float x, float y)
 {
-    float b = x / y;
-    return (b - floorf(b)) * y;
+    float b = fmodf(x,y);
+    return b < 0 ? b + y : b;
 }
 
-static unsigned int moduloInt(float x, float y)
+static int moduloInt(int x, int y)
 {
-    float b = x / y;
-    return (int)roundf((b - floorf(b)) * y);
+    int b = x % y;
+    return b < 0 ? b + y : b;
 }
 
 float interpolateAngleFromConstantsAndSlopes(   float angleToInterpolateInDegree,

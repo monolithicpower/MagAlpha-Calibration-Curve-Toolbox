@@ -3,8 +3,8 @@
 
 static float modulo(float x, float y)
 {
-    float b = x / y;
-    return (b - floorf(b)) * y;
+    float b = fmodf(x,y);
+    return b < 0 ? b + y : b;
 }
 
 static void getHarmonics(float angleErrorArrayInDegree[],
