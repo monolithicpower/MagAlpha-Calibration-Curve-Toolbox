@@ -16,21 +16,26 @@ static unsigned int moduloInt(float x, float y)
 float interpolateAngleFromConstantsAndSlopes(   float angleToInterpolateInDegree,
                                                 float angleErrorConstants[],
                                                 float angleErrorSlopes[],
-                                                const unsigned int lookupTableSize)
+                                                const unsigned int lookupTableSize,
+                                                float zeroDegreeOffset,
+                                                float *pAngleError)
 {
     float angleError;
     unsigned int lookupTableIndex;
     lookupTableIndex = modulo(floorf((angleToInterpolateInDegree/360.0)*lookupTableSize), lookupTableSize);
     angleError = angleErrorConstants[lookupTableIndex]+(angleErrorSlopes[lookupTableIndex]*angleToInterpolateInDegree);
     //return the corrected angle
-    return angleToInterpolateInDegree-angleError;
+    *pAngleError=angleError;
+    return modulo((angleToInterpolateInDegree-angleError)+zeroDegreeOffset, 360.0);
 }
 
 float interpolateAngleFromConstantsAndSlopesUsingLinearSearch(  float angleToInterpolateInDegree,
                                                                 float lookupTableAngle[],
                                                                 float angleErrorConstants[],
                                                                 float angleErrorSlopes[],
-                                                                const unsigned int lookupTableSize)
+                                                                const unsigned int lookupTableSize,
+                                                                float zeroDegreeOffset,
+                                                                float *pAngleError)
 {
     float angleError;
     unsigned int lookupTableIndex;
@@ -38,21 +43,27 @@ float interpolateAngleFromConstantsAndSlopesUsingLinearSearch(  float angleToInt
     lookupTableIndex = lookupTableSize-1;
     for (i=0; i<lookupTableSize; ++i)
     {
-        if (angleToInterpolateInDegree>=lookupTableAngle[i])
+        if (lookupTableAngle[i]>angleToInterpolateInDegree)
+        {
+            break;
+        }
+        else
         {
             lookupTableIndex=i;
-            break;
         }
     }
     angleError = angleErrorConstants[lookupTableIndex]+(angleErrorSlopes[lookupTableIndex]*angleToInterpolateInDegree);
     //return the corrected angle
-    return angleToInterpolateInDegree-angleError;
+    *pAngleError=angleError;
+    return modulo((angleToInterpolateInDegree-angleError)+zeroDegreeOffset, 360.0);
 }
 
 float interpolateAngleFromFittedCurve(  float angleToInterpolateInDegree,
                                         float lookupTableAngle[],
                                         float angleErrorInDegree[],
-                                        const unsigned int lookupTableSize)
+                                        const unsigned int lookupTableSize,
+                                        float zeroDegreeOffset,
+                                        float *pAngleError)
 {
     float angleError;
     unsigned int lookupTableIndex;
@@ -67,7 +78,8 @@ float interpolateAngleFromFittedCurve(  float angleToInterpolateInDegree,
     y2 = angleErrorInDegree[nPlus1Index];
     muValue = mu(x1, x2, angleToInterpolateInDegree);
     angleError = linearInterpolate(y1, y2, muValue);
-    return angleToInterpolateInDegree-angleError;
+    *pAngleError=angleError;
+    return modulo((angleToInterpolateInDegree-angleError)+zeroDegreeOffset, 360.0);
 }
 
 float mu(float x1, float x2, float measuredAngleInDegree)
@@ -77,5 +89,5 @@ float mu(float x1, float x2, float measuredAngleInDegree)
 
 float linearInterpolate(float y1, float y2, float mu)
 {
-   return modulo(y1*(1-mu)+y2*mu, 360.0);
+   return y1*(1-mu)+y2*mu;
 }

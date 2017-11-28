@@ -47,11 +47,16 @@ extern "C" {
  * @param angleErrorConstants Lookup table with constants values
  * @param angleErrorSlopes Lookup table with slopes values
  * @param lookupTableSize Size of the lookup table
+ * @param zeroDegreeOffset Angle offset at 0 degree
+ * @param pAngleError Angle Error
+ * @return corrected angle
  */
 float interpolateAngleFromConstantsAndSlopes(   float angleToInterpolateInDegree,
                                                 float angleErrorConstants[],
                                                 float angleErrorSlopes[],
-                                                const unsigned int lookupTableSize);
+                                                const unsigned int lookupTableSize,
+                                                float zeroDegreeOffset,
+                                                float *pAngleError);
 
 /**
  * @brief Compute the interpolated angle using the constants and
@@ -63,12 +68,17 @@ float interpolateAngleFromConstantsAndSlopes(   float angleToInterpolateInDegree
  * @param angleErrorConstants Lookup table with constants values
  * @param angleErrorSlopes Lookup table with slopes values
  * @param lookupTableSize Size of the lookup table
+ * @param zeroDegreeOffset Angle offset at 0 degree,
+ * @param pAngleError Angle Error
+ * @return corrected angle
  */
 float interpolateAngleFromConstantsAndSlopesUsingLinearSearch(  float angleToInterpolateInDegree,
                                                                 float lookupTableAngle[],
                                                                 float angleErrorConstants[],
                                                                 float angleErrorSlopes[],
-                                                                const unsigned int lookupTableSize);
+                                                                const unsigned int lookupTableSize,
+                                                                float zeroDegreeOffset,
+                                                                float *pAngleError);
 
 /**
  * @brief Compute the interpolated angle using the linear interpolation method.
@@ -77,11 +87,16 @@ float interpolateAngleFromConstantsAndSlopesUsingLinearSearch(  float angleToInt
  * @param lookupTableAngle Lookup table with the input angle used to compute the error
  * @param angleErrorInDegree[] Lookup table with the angle error in degree
  * @param lookupTableSize Size of the lookup table
+ * @param zeroDegreeOffset Angle offset at 0 degree
+ * @param pAngleError Angle Error
+ * @return corrected angle
  */
 float interpolateAngleFromFittedCurve(  float angleToInterpolateInDegree,
                                         float lookupTableAngle[],
                                         float angleErrorInDegree[],
-                                        const unsigned int lookupTableSize);
+                                        const unsigned int lookupTableSize,
+                                        float zeroDegreeOffset,
+                                        float *pAngleError);
 
 /**
  * @brief Compute where to estimate the value on the interpolated line.
@@ -93,6 +108,7 @@ float interpolateAngleFromFittedCurve(  float angleToInterpolateInDegree,
  * @param x1 Closest angle value smaller or equal to the measured angle
  * @param x2 Closest angle valie bigger than the measured angle
  * @param measuredAngleInDegree
+ * @return mu
  */
 float mu(float x1, float x2, float measuredAngleInDegree);
 
@@ -103,15 +119,9 @@ float mu(float x1, float x2, float measuredAngleInDegree);
  * @param y1 Angle error at x1 angle
  * @param y2 Angle error at x2 angle
  * @param mu Number between 0.0 and 1.0 which defines where to estimate the value on the interpolated line
+ * @return interpolated angle error
  */
 float linearInterpolate(float y1, float y2, float mu);
-
-///**
-// * @brief Compute the modula the same way MatLab does.
-// *
-// * Private function only used inside interpolate functions
-// */
-//float modulo(float x, float y);
 
 #if defined __cplusplus
 }

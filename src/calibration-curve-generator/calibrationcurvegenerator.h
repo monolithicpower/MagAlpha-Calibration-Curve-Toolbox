@@ -229,25 +229,6 @@ unsigned char generateAngleErrorLookupTableUsingConstantsAndSlopes( float angleI
                                                                     float *pPhi3,
                                                                     float *pPhi4);
 
-/**
- * @brief Compute the harmonics parameters.
- *
- * Private function only used inside #extractAngleErrorHarmonics
- */
-unsigned char getHarmonics(float angleErrorArrayInDegree[],
-                           const unsigned int sizeAngleArray,
-                           unsigned int harmonicOrder,
-                           float *pHarmonicAmplitude,
-                           float *pHarmonicPhase);
-
-
-///**
-// * @brief Compute the modula the same way MatLab does.
-// *
-// * Private function only used inside #extractAngleErrorHarmonics
-// */
-//float modulo(float x, float y);
-
 #if defined __cplusplus
 }
 #endif

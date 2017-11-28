@@ -11,6 +11,17 @@
 #include "calibrationcurvegenerator.h"
 #include "angleinterpolation.h"
 
+static float modulo(float x, float y)
+{
+    float b = x / y;
+    return (b - floorf(b)) * y;
+}
+
+static float angleOutputWithoutCorrection(float angleOutputInDegree, float zeroDegreeOffset)
+{
+    return modulo(angleOutputInDegree+zeroDegreeOffset, 360.0);
+}
+
 int main(int argc, char *argv[])
 {
     (void) argc;
@@ -69,7 +80,6 @@ int main(int argc, char *argv[])
                      "| " << std::left << std::setw(MAXWIDTH) << std::setfill(' ')<< qPrintable(rowElement[1]) << "|" << std::endl;
     }
     file.close();
-
     const unsigned int dataLength = refAngle.size();
     float referenceAngleArray[dataLength];
     float measuredAngleArray[dataLength];
@@ -81,7 +91,6 @@ int main(int argc, char *argv[])
         referenceAngleArray[i] = (float)refAngle[i]*360.0/fullScaleValue;
         measuredAngleArray[i] = (float)measuredAngle[i]*360.0/fullScaleValue;
     }
-
     //Call Curve fitting function here
     float h1;
     float h2;
@@ -92,7 +101,7 @@ int main(int argc, char *argv[])
     float phi3;
     float phi4;
     float angleErrorArray[dataLength];
-
+    // Find harmonics parameters
     extractAngleErrorHarmonics(referenceAngleArray,
                                measuredAngleArray,
                                angleErrorArray,
@@ -105,23 +114,81 @@ int main(int argc, char *argv[])
                                &phi2,
                                &phi3,
                                &phi4);
-
+    //Compute the fit for every measurement points (for test purpose)
     float fittedAngleErrorInDegree[dataLength];
     float angleErrorConstants[dataLength];
     float angleErrorSlopes[dataLength];
-//    float correctedAngleArrayInDegree[dataLength];
-
     generateAngleErrorLookupTableUsingFittedCurve( measuredAngleArray, fittedAngleErrorInDegree,
                                     dataLength, &h1, &h2, &h3, &h4,
                                     &phi1, &phi2, &phi3, &phi4);
-
     generateAngleErrorLookupTableUsingConstantsAndSlopes( measuredAngleArray, angleErrorConstants, angleErrorSlopes,
                                     dataLength, &h1, &h2, &h3, &h4,
                                     &phi1, &phi2, &phi3, &phi4);
+    //Genereate the lookupp table that will be use in the MCU application
+    //Define the lookup table size
+    const unsigned int lookupTableSize = 32;
+    float lookupTableInputAngleArray[lookupTableSize];
+    float angleStep = 360.0/(float)lookupTableSize;
+    std::cout << "\n\nLookup Table Angle Error" <<std::endl;
+    for(unsigned int i = 0;i<lookupTableSize;++i)
+    {
+        lookupTableInputAngleArray[i]=(float)i*angleStep;
+        std::cout << "Index[" << i << "] = " << lookupTableInputAngleArray[i] << std::endl;
+    }
+    float lookupTableFittedOutputAngleArray[lookupTableSize];
+    generateAngleErrorLookupTableUsingFittedCurve(lookupTableInputAngleArray, lookupTableFittedOutputAngleArray,
+                                                  lookupTableSize, &h1, &h2, &h3, &h4,
+                                                  &phi1, &phi2, &phi3, &phi4);
+    float lookupTableConstOutputAngleArray[lookupTableSize];
+    float lookupTableSlopesOutputAngleArray[lookupTableSize];
+    generateAngleErrorLookupTableUsingConstantsAndSlopes(lookupTableInputAngleArray, lookupTableConstOutputAngleArray, lookupTableSlopesOutputAngleArray,
+                                                         lookupTableSize, &h1, &h2, &h3, &h4,
+                                                         &phi1, &phi2, &phi3, &phi4);
+    //Compute the interpolated points
+    float correctedAngleConstSlopes[dataLength];
+    float correctedAngleErrorConstSlopes[dataLength];
+    float angleError;
 
-
-
-
+    for(unsigned int i = 0;i<dataLength;++i)
+    {
+        correctedAngleConstSlopes[i]=interpolateAngleFromConstantsAndSlopes(measuredAngleArray[i],
+                                                                            lookupTableConstOutputAngleArray,
+                                                                            lookupTableSlopesOutputAngleArray,
+                                                                            lookupTableSize,
+                                                                            referenceAngleArray[0],
+                                                                            &angleError);
+        correctedAngleErrorConstSlopes[i]=angleError;
+    }
+    float correctedAngleConstSlopesLinSearch[dataLength];
+    float correctedAngleErrorConstSlopesLinSearch[dataLength];
+    for(unsigned int i = 0;i<dataLength;++i)
+    {
+        correctedAngleConstSlopesLinSearch[i]=interpolateAngleFromConstantsAndSlopesUsingLinearSearch(measuredAngleArray[i],
+                                                                                                      lookupTableInputAngleArray,
+                                                                                                      lookupTableConstOutputAngleArray,
+                                                                                                      lookupTableSlopesOutputAngleArray,
+                                                                                                      lookupTableSize,
+                                                                                                      referenceAngleArray[0],
+                                                                                                      &angleError);
+        correctedAngleErrorConstSlopesLinSearch[i]=angleError;
+    }
+    float correctedAngleFittedCurve[dataLength];
+    float correctedAngleErrorFittedCurve[dataLength];
+    for(unsigned int i = 0;i<dataLength;++i)
+    {
+        correctedAngleFittedCurve[i]=interpolateAngleFromFittedCurve(measuredAngleArray[i],
+                                                                     lookupTableInputAngleArray,
+                                                                     lookupTableFittedOutputAngleArray,
+                                                                     lookupTableSize,
+                                                                     referenceAngleArray[0],
+                                                                     &angleError);
+        correctedAngleErrorFittedCurve[i]=angleError;
+    }
+    float measuredAngleWithZeroCorrection[dataLength];
+    for(unsigned int i = 0;i<dataLength;++i)
+    {
+        measuredAngleWithZeroCorrection[i]=angleOutputWithoutCorrection(measuredAngleArray[i], referenceAngleArray[0]);
+    }
     QFile outpuFile;
     QFileInfo outputFileInfo;
     outputFileInfo.setFile("..\\output-files\\calibration_curve.csv");
@@ -130,16 +197,24 @@ int main(int argc, char *argv[])
     if(outpuFile.open(QFile::WriteOnly |QFile::Truncate))
     {
         QTextStream output(&outpuFile);
-        output <<"Reference Angle" << "," << "Measured Angle" << "," << "Angle Error" << "," << "Angle Error Fitting" <<
+        output <<"Reference Angle" << "," << "Measured Angle" << "," << "Measured Angle with Zero Correction" << "," << "Angle Error" << "," << "Angle Error Fitting" <<
                  "," << "H1" << "," << "H2" << "," << "H3" << "," << "H4" <<
                  "," << "Ph1" << "," << "Ph2" << "," << "Ph3" << "," << "Ph4" <<
-                 "," << "Number of points" <<endl;
-        for (int i = 0; i<refAngle.size();++i)
+                 "," << "Number of points" <<
+                 "," << "Corrected Angle Cst + Slope" << "," << "Angle Error after fit Cst + Slope" <<
+                 "," << "Corrected Angle Cst + Slope Lin Search" << "," << "Angle Error after fit Cst + Slope Lin Search" <<
+                 "," << "Corrected Angle Fitted" << "," << "Angle Error after Fit" <<
+                 "," << endl;
+        for (unsigned int i = 0; i<dataLength;++i)
         {
-            output << referenceAngleArray[i] << "," << measuredAngleArray[i] << "," << angleErrorArray[i] << "," << fittedAngleErrorInDegree[i] << "," <<
+            output << referenceAngleArray[i] << "," << measuredAngleArray[i] << "," << measuredAngleWithZeroCorrection[i] << "," << angleErrorArray[i] << "," << fittedAngleErrorInDegree[i] << "," <<
                       h1 << "," << h2 << "," << h3 << "," << h4 << "," <<
                       phi2 << "," << phi2 << "," << phi2 << "," << phi2 << "," <<
-                      dataLength<< endl;
+                      dataLength<< "," <<
+                      correctedAngleConstSlopes[i] << "," << correctedAngleErrorConstSlopes[i] <<"," <<
+                      correctedAngleConstSlopesLinSearch[i] << "," << correctedAngleErrorConstSlopesLinSearch[i] <<"," <<
+                      correctedAngleFittedCurve[i] << "," << correctedAngleErrorFittedCurve[i] <<"," <<
+                      endl;
         }
     }
     outpuFile.close();
