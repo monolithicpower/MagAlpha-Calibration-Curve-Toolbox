@@ -67,7 +67,7 @@ ma-cal-generator.exe
 ```
 Or you can specify the CSV input file you want to use.
 ```
-MagAlpha-Calibration-Curve-Toolbox\bin>ma-cal-generator.exe ..\input-files\calibration_data_input_example_add_75.csv
+ma-cal-generator.exe ..\input-files\calibration_data_input_example_add_75.csv
 ```
 
 In both cases the output file will be located in `MagAlpha-Calibration-Curve-Toolbox\output-files\calibration_curve.csv`.
