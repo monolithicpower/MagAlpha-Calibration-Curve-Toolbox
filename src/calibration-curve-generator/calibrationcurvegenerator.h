@@ -52,7 +52,7 @@ extern "C" {
  *
  * See below a function call example:
  * @code{.c}
- * //input paramaters
+ * //input parameters
  * const unsigned int sizeAngleArray = 200;
  * float referenceAngleInDegree[sizeAngleArray];    //fill with ref angle
  * float measuredAngleInDegree[sizeAngleArray];     //fill with sensor angle
@@ -120,7 +120,7 @@ unsigned char extractAngleErrorHarmonics(   float referenceAngleInDegree[],
  * @p fittedAngleErrorInDegree[] array.
  * See below a function call example:
  * @code{.c}
- * //input paramaters
+ * //input parameters
  * const unsigned int sizeAngleArray = 200;
  * float angleInDegree[sizeAngleArray]; //fill with sensor angle
  * //from extractAngleErrorHarmonics function
@@ -183,7 +183,7 @@ unsigned char generateAngleErrorLookupTableUsingFittedCurve(float angleInDegree[
  * @p angleErrorConstants[] and @p angleErrorSlopes[] arrays.
  * See below a function call example:
  * @code{.c}
- * //input paramaters
+ * //input parameters
  * const unsigned int sizeAngleArray = 200;
  * float angleInDegree[sizeAngleArray]; //fill with sensor angle
  * //from extractAngleErrorHarmonics function

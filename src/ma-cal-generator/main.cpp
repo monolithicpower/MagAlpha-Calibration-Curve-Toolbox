@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
     generateAngleErrorLookupTableUsingConstantsAndSlopes( measuredAngleArray, angleErrorConstants, angleErrorSlopes,
                                     dataLength, &h1, &h2, &h3, &h4,
                                     &phi1, &phi2, &phi3, &phi4);
-    //Genereate the lookupp table that will be use in the MCU application
+    //Generate the lookup table that will be use in the MCU application
     //Define the lookup table size
     const unsigned int lookupTableSize = 32;
     float lookupTableInputAngleArray[lookupTableSize];
@@ -192,6 +192,11 @@ int main(int argc, char *argv[])
     QFile outpuFile;
     QFileInfo outputFileInfo;
     outputFileInfo.setFile("..\\output-files\\calibration_curve.csv");
+    QDir outputDir;
+    if (!outputDir.mkpath(outputFileInfo.path()))
+    {
+        std::cout << "Error, Program was unamble to create the directory: " << qPrintable(outputFileInfo.path()) << std::endl;
+    }
     QDir::setCurrent(outputFileInfo.path());
     outpuFile.setFileName(outputFileInfo.fileName());
     if(outpuFile.open(QFile::WriteOnly |QFile::Truncate))
@@ -204,7 +209,7 @@ int main(int argc, char *argv[])
                  "," << "Corrected Angle Cst + Slope" << "," << "Angle Error after fit Cst + Slope" <<
                  "," << "Corrected Angle Cst + Slope Lin Search" << "," << "Angle Error after fit Cst + Slope Lin Search" <<
                  "," << "Corrected Angle Fitted" << "," << "Angle Error after Fit" <<
-                 "," << endl;
+                 endl;
         for (unsigned int i = 0; i<dataLength;++i)
         {
             output << referenceAngleArray[i] << "," << measuredAngleArray[i] << "," << measuredAngleWithZeroCorrection[i] << "," << angleErrorArray[i] << "," << fittedAngleErrorInDegree[i] << "," <<
@@ -213,7 +218,7 @@ int main(int argc, char *argv[])
                       dataLength<< "," <<
                       correctedAngleConstSlopes[i] << "," << correctedAngleErrorConstSlopes[i] <<"," <<
                       correctedAngleConstSlopesLinSearch[i] << "," << correctedAngleErrorConstSlopesLinSearch[i] <<"," <<
-                      correctedAngleFittedCurve[i] << "," << correctedAngleErrorFittedCurve[i] <<"," <<
+                      correctedAngleFittedCurve[i] << "," << correctedAngleErrorFittedCurve[i] <<
                       endl;
         }
     }

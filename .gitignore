@@ -4,11 +4,13 @@
 /output-files
 
 # Doxygen
-/doc/generated-output
+/docs/generated-output
 
 # Executable
 *.exe
 
+# Archive
+*.zip
 
 # C++ objects and libs
 *.slo
@@ -47,4 +49,3 @@ Makefile*
 
 # QtCtreator CMake
 CMakeLists.txt.user*
-
