@@ -48,7 +48,7 @@ MagAlpha-Calibration-Curve-Toolbox
 ### Build the project
 Start by downloading and installing the [Qt Open Source Framework](https://www1.qt.io/download-open-source/).
 
-Then open *Qt Creator*, go to *File* => *Open File or Project...* and select [src/ma-cal-generato/ma-cal-generator.pro](src/ma-cal-generato/ma-cal-generator.pro).
+Then open *Qt Creator*, go to *File* => *Open File or Project...* and select [src/ma-cal-generator/ma-cal-generator.pro](src/ma-cal-generator/ma-cal-generator.pro).
 The last step is to built the project. The executable will be located on the *bin* folder.
 
 > This project was built and tested with *Desktop Qt 5.7.0 MinGW 32bit for Windows* but it should works as well with the latest Qt version.
