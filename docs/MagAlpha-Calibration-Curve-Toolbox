@@ -8,7 +8,7 @@ PROJECT_NAME           = "MagAlpha-Calibration-Curve-Toolbox"
 PROJECT_NUMBER         = 0.1.0
 PROJECT_BRIEF          = "Collection of tools and code examples designed to help users improving the accuracy of the MPS MagAlpha magnetic angle sensor by implementing a calibration curve."
 PROJECT_LOGO           = image/mps_logo-125x50.png
-OUTPUT_DIRECTORY       = generated-output
+OUTPUT_DIRECTORY       =
 CREATE_SUBDIRS         = NO
 ALLOW_UNICODE_NAMES    = NO
 OUTPUT_LANGUAGE        = English
@@ -199,7 +199,7 @@ EXTRA_SEARCH_MAPPINGS  =
 #---------------------------------------------------------------------------
 # Configuration options related to the LaTeX output
 #---------------------------------------------------------------------------
-GENERATE_LATEX         = YES
+GENERATE_LATEX         = NO
 LATEX_OUTPUT           = latex
 LATEX_CMD_NAME         = latex
 MAKEINDEX_CMD_NAME     = makeindex
